@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melodify</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'spotifyhome/styles.css' %}">
+    <script src="{% static 'spotifyhome/js/scripts.js' %}"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+
+</head>
+
+<body>
+    <div class="mainpage">
+        <div class="side-container">
+            <div class="input-container">
+                <input type="text" id="side-search" placeholder="Search">
+            </div>
+            <div class="side-contents">
+                <img src="{% static 'spotifyhome/liked.png' %}" alt="liked" class="side-icon">
+                <button class="side-btn" id="side-like-btn">Liked Songs</button>
+            </div>
+            <div class="side-contents">
+                <img src="{% static 'spotifyhome/favourite.webp' %}" alt="favorite" class="side-icon">
+                <button class="side-btn" id="side-fav">Favorites</button>
+            </div>
+            <div class="side-contents">
+                <img src="{% static 'spotifyhome/playlist.jpg' %}" alt="playlist" class="side-icon">
+                <button class="side-btn" id="side-pl-btn">Playlists</button>
+            </div>
+            <div class="side-contents">
+                <img src="{% static 'spotifyhome/settings.jpg' %}" alt="settings" class="side-icon">
+                <button class="side-btn" id="settings-btn">Settings</button>
+            </div>
+            <div class="side-contents">
+                <img src="{% static 'spotifyhome/email.webp' %}" alt="email" class="side-icon">
+                <button class="side-btn" id="mail-btn">Mail Us</button>
+            </div>
+            <p id="side-detail">@2024 Melodify</p>
+        </div>
+
+        <div class="content-container">
+            <div class="fixed-content">
+                <div class="home-search">
+                    <div class="home">
+                        <img src="{% static 'spotifyhome/home.png' %}" alt="home" id="home-icon">
+                    </div>
+                    <div class="input-container">
+                        <input type="text" id="search" placeholder="What do you want to play?">
+                    </div>
+
+                </div>
+
+                <div class="account">
+                    <img src="{% static 'spotifyhome/account_icon.webp' %}" alt="Account Icon" id="account-icon">
+                </div>
+            </div>
+            <div class="scrollable-content">
+                <div id="songList">
+                    <div class="tamil-songs">
+                        <h3 id="language">Tamil Songs</h3>
+                        <div class="songs-container">
+                            <img src="{% static 'spotifyhome/thallipogadhey.png' %}" alt="Thalli Pogathey" class="pics">
+                            <img src="{% static 'spotifyhome/newyorknagaram.png' %}" alt="NewYork Nagaram" class="pics">
+                            <img src="{% static 'spotifyhome/neeyumnaanumanbe.png' %}" alt="Neeyum Naanum Anbe"
+                                class="pics">
+                            <img src="{% static 'spotifyhome/eniniya.png' %}" alt="En Iniya Thanimaye" class="pics">
+                            <img src="{% static 'spotifyhome/vennilave.png' %}" alt="Vennilave tharayil" class="pics">
+                            <img src="{% static 'spotifyhome/kurumugil.png' %}" alt="Kurumugil" class="pics">
+
+                        </div>
+                    </div>
+
+                    <div class="english-songs">
+                        <h3 id="language">English Songs</h3>
+                        <div class="songs-container">
+                            <img src="{% static 'spotifyhome/shapeofyou.png' %}" alt="shape of you" class="pics">
+                            <img src="{% static 'spotifyhome/safari.png' %}" alt="safari" class="pics">
+                            <img src="{% static 'spotifyhome/letmedown.png' %}" alt="let me down slowly" class="pics">
+                            <img src="{% static 'spotifyhome/kingsandqueens.png' %}" alt="kings and queens"
+                                class="pics">
+                            <img src="{% static 'spotifyhome/cheapthrills.png' %}" alt="cheap thrills" class="pics">
+                            <img src="{% static 'spotifyhome/nolie.png' %}" alt="no lie" class="pics">
+                        </div>
+                    </div>
+
+                    <div class="telugu-songs">
+                        <h3 id="language">Telugu Songs</h3>
+                        <div class="songs-container">
+                            <img src="{% static 'spotifyhome/antava.png' %}" alt="oo antava" class="pics">
+                            <img src="{% static 'spotifyhome/sirivennela.png' %}" alt="sirivennela" class="pics">
+                            <img src="{% static 'spotifyhome/odiyamma.png' %}" alt="odiyamma" class="pics">
+                            <img src="{% static 'spotifyhome/naatunaatu.png' %}" alt="naatu naatu" class="pics">
+                            <img src="{% static 'spotifyhome/madathapetti.png' %}" alt="madathapetti" class="pics">
+                            <img src="{% static 'spotifyhome/chuttamalle.png' %}" alt="chuttamalle" class="pics">
+                        </div>
+                    </div>
+
+                    <div class="hindi-songs">
+                        <h3 id="language">Hindi Songs</h3>
+                        <div class="songs-container">
+                            <img src="{% static 'spotifyhome/tumhiho.png' %}" alt="tum hi ho" class="pics">
+                            <img src="{% static 'spotifyhome/sheilakijawani.png' %}" alt="sheila ki jawani"
+                                class="pics">
+                            <img src="{% static 'spotifyhome/sunsathiya.png' %}" alt="sunn sathiya" class="pics">
+                            <img src="{% static 'spotifyhome/titli.png' %}" alt="titli" class="pics">
+                            <img src="{% static 'spotifyhome/raatan.png' %}" alt="raatan lambiyan" class="pics">
+                            <img src="{% static 'spotifyhome/kesariya.png' %}" alt="kesariya tera   " class="pics">
+                        </div>
+                    </div>
+                    <button id="current-user">Current user</button>
+
+                </div>
+                <!-- <div class="bottom-gap"></div> -->
+            </div>
+            <div id="audio-player-container" style="display:none">
+                <div id="player-content">
+                    <div id="additional">
+                        <img src="{% static 'spotifyhome/add_like1.jpg' %}" id="add_like" alt="Like"
+                            data-static-url="{% static 'spotifyhome/' %}">
+                        <img src=" {% static 'spotifyhome/h1.jpg' %}" id="add_favadd" alt="Add To Favorites">
+                        <img src="{% static 'spotifyhome/add_to_playlist.jpg' %}" id="add_playlist"
+                            alt="Add To Playlist">
+                    </div>
+                    <div id="main-content">
+                        <div id="songs-pic-details">
+                            <img src="" id="play-pic">
+                            <div id="songs-details"></div>
+                        </div>
+
+                        <div id="youtube-player"></div>
+                        <div id="custom-controls">
+                            <button id="play-pause">Play</button>
+                            <div id="progress-container">
+                                <input type="range" id="progress-bar" min="0" max="100" value="0">
+                                <span id="current-time">0:00</span> / <span id="duration">0:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="playlist-container" style="display:none">
+                <h2 id="playlist-header">Your Playlists</h2>
+                <div class="user-playlists"></div>
+                <div id="create-playlist">
+                    <button id="create-pl">+ Create Playlist</button>
+                </div>
+            </div>
+
+            <div id="playlistSongs" style="display:none">
+                <h2 id="playlist-name"></h2>
+                <div class="input-container">
+                    <input type="text" id="playlist-search" placeholder="Search for songs">
+                </div>
+                <div class="playlist-songs"></div>
+            </div>
+
+        </div>
+
+        <div id="side-layout" style="display:none">
+            <div id="side">
+                <p id="user-mail-id"></p>
+                <button id="logout">Logout</button>
+                <button id="side-close">&times;</button>
+            </div>
+        </div>
+
+        <div id="authOverlay">
+            <div class="auth-form">
+                <button id="close-btn">&times;</button>
+                <div id="loginForm">
+                    <h2>Login</h2>
+                    <form>
+                        <div class="form-group">
+                            <label for="loginUsername">Email:</label>
+                            <input type="email" id="loginEmail" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password:</label>
+                            <input type="password" id="loginPassword" name="password" required>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" id="login-submit">Log In</button>
+                        </div>
+                    </form>
+                    <div class="switch-form">
+                        <button id="switch">New user? Register here</button>
+                    </div>
+                </div>
+                <div id="registerForm" style="display: none;">
+                    <h2>Register</h2>
+                    <form>
+                        <div class="form-group">
+                            <label for="registerUsername">Username:</label>
+                            <input type="text" id="registerUsername" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">Email:</label>
+                            <input type="email" id="registerEmail" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Password:</label>
+                            <input type="password" id="registerPassword" name="password" required>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" id="reg-submit">Register</button>
+                        </div>
+                    </form>
+                    <!-- <div class="switch-form">
+                        <button onclick="switchForm('login')">Already have an account? Login here</button>
+                    </div> -->
+                </div>
+                <div id="emailForm" style="display:none">
+                    <h2>Write your issue</h2>
+                    <form>
+                        <div class="form-group">
+                            <label for="message">Your message</label>
+                            <textarea id="message" placeholder="Share your thoughts, we’re all ears!" rows="10"
+                                cols="38"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" id="email-submit">Send</button>
+                        </div>
+                    </form>
+
+                </div>
+                <div id="playlistSong" style="display: none">
+                    <form>
+                        <div class="form-group">
+                            <label for="registerEmail">Playlist Name:</label>
+                            <input type="text" id="playlistName" name="playlistName" required>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" id="playlistsong-create-btn">Create</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+</body>
+
+</html>
