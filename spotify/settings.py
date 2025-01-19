@@ -54,6 +54,10 @@ MIDDLEWARE = [
     # 'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     # 'django.contrib.staticfiles.storage.StaticFilesStorage',
 ]
+INSTALLED_APPS += ["corsheaders"]
+MIDDLEWARE.insert(0, "corsheaders.middleware.CorsMiddleware")
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 ROOT_URLCONF = 'spotify.urls'
 

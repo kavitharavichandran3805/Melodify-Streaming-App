@@ -402,12 +402,14 @@ body {
 
 
 #playlist-container,
-#playlistSongs {
+#playlistSongs,
+#likedsongs-container,
+#favsongs-container {
     width: 100%;
     max-width: 1000px;
     margin: 10px auto;
     padding: 20px;
-    background-color: white;
+    background: linear-gradient(135deg, #3a6073, #16222a);
     border-radius: 10px;
     color: black;
     font-family: Arial, sans-serif;
@@ -416,29 +418,37 @@ body {
     height: auto;
     flex-grow: 1;
     overflow-y: auto;
+    scroll-behavior: auto;
+    margin-bottom: 20px;
 
 }
 
+
 #playlist-header,
-#playlist-name {
+#playlist-name,
+#likedsongs-header,
+#favsongs-header {
     position: absolute;
     top: 30px;
     left: 30px;
-    font-size: 32px;
+    font-size: 50px;
+    font-family: "Dancing Script", cursive;
     margin: 0;
     font-weight: bold;
-    color: black;
+    color: #C0C0C0;
 }
 
 .user-playlists,
 .playlist-songs {
-    margin-top: 100px;
+    margin-top: 60px;
     display: flex;
     margin-left: 60px;
     flex-direction: column;
     gap: 5px;
     padding: 0 40px;
 }
+
+
 
 #create-playlist {
     display: flex;
@@ -456,3 +466,338 @@ body {
     padding: 10px 0;
     font-size: 16px;
 }
+
+
+#added-songs,
+#liked-added-songs,
+#fav-added-songs {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.song-list,
+.likedsong-list,
+.favsong-list {
+    width: 80%;
+    border-collapse: collapse;
+    margin-left: -20x;
+}
+
+.song-list th,
+.likedsong-list th,
+.favsong-list th {
+    text-align: center;
+    font-weight: bold;
+    padding: 10px;
+    border-bottom: 1px solid #b3b3b3;
+    font-family: "Dancing Script", cursive;
+    font-size: 20px;
+    font-weight: bold;
+    color: #708090;
+}
+
+.song-list th:nth-child(1),
+.likedsong-list th:nth-child(1),
+.favsong-list th:nth-child(1) {
+    width: 10%;
+}
+
+.song-list th:nth-child(2),
+.likedsong-list th:nth-child(2),
+.favsong-list th:nth-child(2) {
+    width: 20%;
+}
+
+.song-list th:nth-child(3),
+.likedsong-list th:nth-child(3),
+.favsong-list th:nth-child(3) {
+    width: 40%;
+}
+
+.song-list th:nth-child(4),
+.likedsong-list th:nth-child(4),
+.favsong-list th:nth-child(4) {
+    width: 10%;
+
+}
+
+/* .song-list th:nth-child(5),
+.likedsong-list th:nth-child(1),
+.favsong-list th:nth-child(1) {
+    width: 10%;
+} */
+
+
+
+.playlist-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 70px;
+}
+
+.playlist-input-container p2 {
+    margin: 0;
+    margin-bottom: 20px;
+    color: #b8a59d;
+    font-size: 30px;
+    font-family: "Dancing Script", cursive;
+}
+
+#playlist-search {
+    width: 40%;
+    padding: 10px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-bottom: 40px;
+}
+
+#playlist-searched-songs {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-weight: bold;
+    padding: 10px;
+    font-family: "Dancing Script", cursive;
+    font-size: 15px;
+    margin-top: 20px;
+
+}
+
+#playlist-searched-songs th:nth-child(1) {
+    width: 20%;
+    border-radius: 15px;
+}
+
+#playlist-searched-songs th:nth-child(2) {
+    width: 60%;
+    color: #C0C0C0;
+}
+
+#playlist-searched-songs th:nth-child(3) {
+    width: 20%;
+}
+
+#song-img {
+    width: 20px;
+    height: 20px;
+}
+
+
+#go-pl-home {
+    font-family: "Dancing Script", cursive;
+    font-size: 25px;
+    display: flex;
+    align-items: end;
+    margin-top: 20px;
+    border-radius: 20px;
+    padding: 10px;
+    margin-left: 850px;
+}
+
+#add_songs_to_playlist {
+    border-radius: 20px;
+    font-size: 18px;
+    padding: 10px;
+    color: white;
+    font-family: "Dancing Script", cursive;
+    margin: 5px;
+    border-color: white;
+    background-color: #C0C0C0;
+}
+
+.tdata {
+    font-family: "Dancing Script", cursive;
+    margin: 5px;
+    font-size: 12px;
+    color: white;
+    text-align: center;
+}
+
+.tdata img {
+    border-radius: 15px;
+    margin-top: 5px;
+}
+
+.action-img-cell img {
+    border-radius: 50%;
+    text-align: center;
+    margin-left: 20px;
+}
+
+
+.song-list tbody tr,
+.favsong-list tbody tr,
+.likedsong-list tbody tr {
+    background: linear-gradient(135deg, #3a6073, #16222a);
+    color: white;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.song-list tbody tr:hover,
+.favsong-list tbody tr:hover,
+.likedsong-list tbody tr:hover {
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    color: #f2f2f2;
+}
+
+.radio-group {
+    display: flex;
+    gap: 20px;
+}
+
+.radio-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+input[type="radio"] {
+    margin: 0;
+}
+
+.liked-play-btn,
+.fav-play-btn,
+#playlist-play-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+#liked-header-container,
+#fav-header-container,
+#pl-header-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    position: relative;
+}
+
+#likedsongs-header,
+#favsongs-header,
+#playlist-name {
+    margin: 0;
+    max-width: calc(100% - 200px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#liked-songs-controls,
+#fav-songs-controls,
+#playlist-controls {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    min-width: 70px;
+    padding-left: 30px;
+}
+
+/* .liked-play-btn,
+.fav-play-btn,
+#playlist-play-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    /* margin-left: 400px; 
+    margin-top: 20px;
+} */
+
+.liked-play-btn:hover,
+.fav-play-btn:hover,
+#playlist-play-btn:hover {
+    background-color: #45a049;
+    transform: scale(1.1);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+}
+
+.liked-play-btn:active,
+.fav-play-btn:active,
+#playlist-play-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* #liked-header-container,
+#fav-header-container,
+#pl-header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px;
+}
+
+#likedsongs-header,
+#favsongs-header,
+#playlist-name {
+    margin: 0;
+    flex-grow: 1;
+}
+
+#liked-songs-controls,
+#fav-songs-controls,
+#playlist-controls {
+    display: flex;
+    align-items: center;
+}
+ */
+
+.liked-play-btn:hover,
+.fav-play-btn:hover,
+#playlist-play-btn:hover {
+    background-color: #0056b3;
+
+}
+
+#go-liked-home,
+#go-fav-home,
+#go-playlist-home {
+    padding: 5px 10px;
+    border: none;
+    background-color: white;
+    color: black;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-family: "Dancing Script", cursive;
+    font-size: 25px;
+    display: flex;
+    align-items: end;
+    margin-top: 20px;
+    border-radius: 20px;
+    padding: 10px;
+}
+
+/* #go-liked-home:hover {
+    background-color: #cc0000;
+    
+} */

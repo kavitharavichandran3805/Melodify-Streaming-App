@@ -42,7 +42,10 @@ class PlaylistSerializers(serializers.ModelSerializer):
         fields=['playlist_name','user']
 
 class PlaylistSongsSerializers(serializers.ModelSerializer):
-    playlist=PlaylistSerializers()
+    song_data=SongsSerializers()
+    playlist_data=PlaylistSerializers()
     class Meta:
         model=PlaylistSongsModel
-        fields=['song_data','playlist_data']
+        fields=['song_data','playlist_data','user']
+
+

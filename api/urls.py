@@ -1,5 +1,5 @@
 from django.urls import path
-from spotifyhome.views import mainpage,YoutubeAPI,LoginAPI,SigninAPI,UserDetailsAPI,EmailAPI,LogoutAPI,LikedSongsAPI,CheckLikedAPI,LikedSampleAPI,FavouriteSongsAPI,FavouritesSampleAPI,checkFavAPI,PlaylistAPI,PlaylistSampleAPI
+from spotifyhome.views import mainpage,YoutubeAPI,LoginAPI,SigninAPI,UserDetailsAPI,EmailAPI,LogoutAPI,LikedSongsAPI,CheckLikedAPI,LikedSampleAPI,FavouriteSongsAPI,FavouritesSampleAPI,checkFavAPI,PlaylistAPI,PlaylistSampleAPI,PlaylistSongsAPI,PlaylistSongsSampleAPI,PlaylistAddedSongsAPI
 
 urlpatterns = [
     path('mainpage/',mainpage),
@@ -16,6 +16,10 @@ urlpatterns = [
     path('sampleFavourite/',FavouritesSampleAPI.as_view()),
     path('checkFav/',checkFavAPI.as_view()),
     path('playlist/',PlaylistAPI.as_view()),
-    path('samplePlaylist/',PlaylistSampleAPI.as_view())
+    path('samplePlaylist/',PlaylistSampleAPI.as_view()),
+    path('playlistSongs/',PlaylistSongsAPI.as_view()),
+    path('samplePlaylistSongs/',PlaylistSongsSampleAPI.as_view()),
+    path('displayPlaylistSongs/',PlaylistAddedSongsAPI.as_view())
+    
 
 ]

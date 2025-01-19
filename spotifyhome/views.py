@@ -122,7 +122,7 @@ def mainpage(request):
 
 class YoutubeAPI(APIView):
 
-    api_key='AIzaSyCFevZuMu7BM3gaOe-I4iQBDIdupUKaiLY'
+    api_key='AIzaSyCzVZ2R3kiLaJ_p0dNSZ72hOvNiYooEME4'
 
     def post(self, request):
         print("inside the youtube api")
@@ -168,10 +168,11 @@ class LikedSongsAPI(APIView):
         print("Inside the likedsongsapi get request")
         print(request.user)
         data=LikedSongsModel.objects.filter(user=request.user)
-        # data=LikedSongsModel.objects.all()
+        if not data.exists():
+            return Response({"status":False,"message":"There are no liked songs"})
         serializers=LikedSongsSerializers(data,many=True)
         print(serializers.data)
-        return Response({"songs":serializers.data})
+        return Response({"status":True,"songs":serializers.data})
 
     def post(self,request):
         print("Inside the likedsongsAPI")
@@ -193,7 +194,7 @@ class LikedSongsAPI(APIView):
         song_obj=SongsModel.objects.get(song_data__song__video_id=video_id) 
         liked_songs_obj=LikedSongsModel.objects.get(user=request.user,song=song_obj)
         liked_songs_obj.delete()
-        return Response({"message":"Song successfully deleted"})
+        return Response({"status":True,"message":"Song successfully deleted"})
     
 class CheckLikedAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -206,6 +207,7 @@ class CheckLikedAPI(APIView):
         try:
             song_obj = SongsModel.objects.get(song_data__song__video_id=video_id)
         except SongsModel.DoesNotExist:
+            print("except in checklikedapi")
             return Response({"status": False, "message": "Song not found"}, status=404)
         is_liked = LikedSongsModel.objects.filter(user=request.user, song=song_obj).exists()
         print(is_liked)
@@ -231,10 +233,11 @@ class FavouriteSongsAPI(APIView):
         print("Inside the favouriteSongsAPI get request")
         print(request.user)
         data=FavouriteSongsModel.objects.filter(user=request.user)
-        # data=LikedSongsModel.objects.all()
+        if not data.exists():
+            return Response({"status":False,"message":"There are no liked songs"})
         serializers=FavouriteSongsSerializers(data,many=True)
         print(serializers.data)
-        return Response({"songs":serializers.data})
+        return Response({"status":True,"songs":serializers.data})
 
     def post(self,request):
         print("Inside the favouriteSongsAPI")
@@ -256,7 +259,7 @@ class FavouriteSongsAPI(APIView):
         song_obj=SongsModel.objects.get(song_data__song__video_id=video_id) 
         liked_songs_obj=FavouriteSongsModel.objects.get(user=request.user,song=song_obj)
         liked_songs_obj.delete()
-        return Response({"message":"Song successfully deleted"})
+        return Response({"status":True,"message":"Song successfully deleted"})
     
 class checkFavAPI(APIView):
 
@@ -270,6 +273,7 @@ class checkFavAPI(APIView):
         try:
             song_obj = SongsModel.objects.get(song_data__song__video_id=video_id)
         except SongsModel.DoesNotExist:
+            print("except in checkfavapi")
             return Response({"status": False, "message": "Song not found"}, status=404)
         is_liked = FavouriteSongsModel.objects.filter(user=request.user, song=song_obj).exists()
         print(is_liked)
@@ -292,6 +296,7 @@ class PlaylistAPI(APIView):
     permission_classes=[IsAuthenticated]
     
     def get(self,request):
+        print("inside the playlists api get method")
         objs=PlaylistModel.objects.filter(user=request.user)
         serializers=PlaylistSerializers(objs,many=True)
         print(serializers.data)
@@ -308,22 +313,91 @@ class PlaylistAPI(APIView):
         return Response({"status":True})
 
     def delete(self,request):
+        print("inside the delete playlist method")
         playlist_name=request.data.get("playlist_name")
         objs=PlaylistModel.objects.filter(playlist_name=playlist_name)
+        print(objs)
         objs.delete()
         return Response({"status":True,"message":"Playlists are deleted"})
 
 class PlaylistSampleAPI(APIView):
+
     def get(self,request):
-        email=request.GET.get("email",None)
-        print(email)
         objs=PlaylistModel.objects.all()
         serializers=PlaylistSerializers(objs,many=True)
         return Response({"data":serializers.data})
+    
     def delete(self,request):
         name=request.data.get('playlist_name')
         objs=PlaylistModel.objects.filter(playlist_name=name)
         objs.delete()
         return Response({"status":True,"message":"Playlist successfully deleted"})
-
     
+
+class PlaylistSongsAPI(APIView):
+
+    permission_classes=[IsAuthenticated]
+    
+    def post(self,request):
+        print("inside the playlistSongsAPI post method")
+        song_data=request.data.get('song_data')
+        playlist_name=request.data.get('playlist_name').lower()
+        print("The playlist name is "+playlist_name)
+        print(song_data)
+        song,song_created=SongsModel.objects.get_or_create(song_data=song_data)
+        playlist,playlist_created=PlaylistModel.objects.get_or_create(playlist_name=playlist_name,user=request.user)
+        if not song:
+            return Response({"status": False, "message": "Song data is invalid."})
+        if not playlist:
+             return Response({"status": False, "message": "Playlist data is invalid."})
+        if PlaylistSongsModel.objects.filter(song_data=song,playlist_data=playlist).exists():
+            return Response({"status":False,"message":"Song is already in the list"})
+        playlist_songs=PlaylistSongsModel.objects.get_or_create(song_data=song,playlist_data=playlist,user=request.user)
+        print(playlist_songs)
+        return Response({"status":True,"message":"Song was succesfully added to the playlist"})
+    
+    def delete(self, request):
+        song_data = request.data.get('song_data')
+        song_data=song_data.get('song_data')
+        playlist_data = request.data.get('playlist_data')
+        playlist_name = playlist_data.get('playlist_name')
+        print(playlist_name)
+        song, song_created = SongsModel.objects.get_or_create(song_data=song_data)
+        playlist, playlist_created = PlaylistModel.objects.get_or_create(playlist_name=playlist_name, user=request.user)
+        if not song:
+            return Response({"status": False, "message": "Song data is invalid."})
+        if not playlist:
+            return Response({"status": False, "message": "Playlist data is invalid."})
+        if PlaylistSongsModel.objects.filter(song_data=song, playlist_data=playlist, user=request.user).exists():
+            print("The object exists")
+            obj = PlaylistSongsModel.objects.get(song_data=song, playlist_data=playlist, user=request.user)
+            obj.delete()  
+            return Response({"status": True, "message": "Song was successfully removed from the playlist"})
+        return Response({"status": False, "message": "Error in removing song from the playlist"})
+    
+class PlaylistAddedSongsAPI(APIView):
+
+    permission_classes=[IsAuthenticated]
+    
+    def post(self,request):
+        print("ins ide the PlaylistAddedSongsAPI")
+        playlist_name=request.data.get('playlist_name').lower()
+        print(playlist_name)
+        playlist,created=PlaylistModel.objects.get_or_create(playlist_name=playlist_name,user=request.user)
+        if not playlist:
+            return Response({"status": False, "message": "Playlist data is invalid."})
+        if PlaylistSongsModel.objects.filter(playlist_data=playlist, user=request.user).exists():
+            objs=PlaylistSongsModel.objects.filter(playlist_data=playlist, user=request.user)
+            serializers=PlaylistSongsSerializers(objs,many=True)
+            return Response({"status":True,"data":serializers.data})
+        return Response({"status":False,"message":"There are no songs in the playlist"})
+
+
+
+class PlaylistSongsSampleAPI(APIView):
+
+    def get(self,request):
+        objs=PlaylistSongsModel.objects.all()
+        serializers=PlaylistSongsSerializers(objs,many=True)
+        return Response({"status":True,"data":serializers.data})
+

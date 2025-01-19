@@ -1,10 +1,14 @@
 let youtubePlayer;
 let isPlaying = false;
 let song_data;
-
+let current_searched_song;
 let like;
 let base_url;
 let fav;
+let songQueue = [];
+let currentIndex = 0;
+let isQueuePlaying = false;
+
 
 function initializeYouTubePlayer() {
     console.log("Attempting to initialize YouTube player");
@@ -87,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
     fav.addEventListener('click', () => changeIcon('fav', fav, base_url));
 
     const playlist = document.getElementById("side-pl-btn")
-    playlist.addEventListener('click', () => playlistPage());
+    playlist.addEventListener('click', () => showPages('playlist'));
 
     const create_playlist = document.getElementById('create-pl')
     create_playlist.addEventListener('click', () => openAuthOverlay('playlist'))
@@ -95,7 +99,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const addPlaylistBtn = document.getElementById('playlistsong-create-btn')
     addPlaylistBtn.addEventListener('click', function (event) {
         event.preventDefault();
-        const playlistName = document.getElementById('playlistName').value
+        const playlistInput = document.getElementById('playlistName')
+        const playlistName = playlistInput.value
+        playlistInput.value = ""
         console.log("Created playlist name is : " + playlistName)
         playlist_backend(playlistName)
     })
@@ -116,6 +122,57 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    const playlist_input = document.getElementById('playlist-search');
+    playlist_input.addEventListener('keypress', function (event) {
+        console.log("inside the keypress function")
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            console.log("inside the event.target if condition")
+            const playlist_search_input = playlist_input.value;
+            console.log("The playlist searched song name is " + playlist_search_input)
+            playlist_input_display_songs(playlist_search_input);
+            playlist_input.value = '';
+        }
+    });
+
+    const go_playlist_home_btn = document.getElementById('go-playlist-home');
+    go_playlist_home_btn.addEventListener('click', function (event) {
+        console.log("playlist home button was clicked")
+        showPlaylistHome();
+    });
+
+    const add_song_to_playlist = document.getElementById('add_songs_to_playlist');
+    add_song_to_playlist.addEventListener('click', function (event) {
+        console.log("the add button was clicked");
+        addToPlaylist()
+    });
+
+    const playPlaylistSongs = document.getElementById('playlist-play-btn')
+    playPlaylistSongs.addEventListener('click', function (event) {
+        playToggle()
+    })
+
+    const plListBack = document.getElementById('go-pl-home')
+    plListBack.addEventListener('click', () => displayPage())
+
+    const likedsongs = document.getElementById('side-like-btn')
+    likedsongs.addEventListener('click', () => showPages('liked'))
+
+    const favsongs = document.getElementById('side-fav')
+    favsongs.addEventListener('click', () => showPages('fav'))
+
+    const likedBack = document.getElementById('go-liked-home')
+    likedBack.addEventListener('click', () => displayPage())
+
+    const favBack = document.getElementById('go-fav-home')
+    favBack.addEventListener('click', () => displayPage())
+
+    const playLikedSongs = document.querySelector('.liked-play-btn')
+    playLikedSongs.addEventListener('click', () => playToggle())
+
+    const playFavSongs = document.querySelector('.fav-play-btn')
+    playFavSongs.addEventListener('click', () => playToggle())
+
     const login = document.getElementById("account-icon")
     login.addEventListener('click', () => checkLoggedUser());
 
@@ -125,8 +182,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const switch_form = document.getElementById('switch')
     switch_form.addEventListener('click', () => openAuthOverlay('signin'));
 
-    const user_details = document.getElementById('current-user')
-    user_details.addEventListener('click', getCurrentUser)
+    // const user_details = document.getElementById('current-user')
+    // user_details.addEventListener('click', getCurrentUser)
 
     const email = document.getElementById('mail-btn')
     email.addEventListener('click', () => openAuthOverlay('email'));
@@ -137,6 +194,26 @@ document.addEventListener('DOMContentLoaded', function () {
         const message = document.getElementById('message').value;
         console.log(message)
         email_submit(message)
+    })
+
+    const settings = document.getElementById('settings-btn')
+    settings.addEventListener('click', () => openAuthOverlay('settings'))
+
+    const theme = document.querySelectorAll('input[name="theme"]');
+    theme.forEach((radio) => {
+        radio.addEventListener('change', (event) => {
+            const selectedTheme = event.target.value;
+            if (selectedTheme === 'dark') {
+                document.body.style.backgroundColor = '#000';
+                document.body.style.color = '#fff';
+                console.log("black theme selected")
+            }
+            else if (selectedTheme === 'white') {
+                document.body.style.backgroundColor = '#fff';
+                document.body.style.color = '#000';
+                console.log("white theme selected")
+            }
+        })
     })
 
     const login_button = document.getElementById('login-submit');
@@ -176,14 +253,461 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setInterval(updateProgressBar, 1000);
     initializeYouTubePlayer();
+    checkLoggedUser();
+
 });
+
+function playSongpl(videoid) {
+    console.log("inside the playsongpl method")
+    if (!youtubePlayer || !youtubePlayer.loadVideoById) {
+        console.error('YouTube player not fully initialized. Retrying in 1 second.');
+        setTimeout(() => playSong(song), 1000);
+        return;
+    }
+    try {
+        youtubePlayer.loadVideoById(videoid);
+        youtubePlayer.playVideo();
+        isQueuePlaying = true;
+    }
+    catch (error) {
+        console.error("Error playing video:", error);
+    }
+}
+
+function playNextSong() {
+    console.log("inside the playNextSong method")
+    if (currentIndex >= songQueue.length) {
+        console.log("Restarting the playlist");
+        currentIndex = 0;
+        playSongpl(songQueue[currentIndex]);
+        return;
+    }
+    let currentSong = songQueue[currentIndex];
+    console.log("Current video id is " + currentSong)
+    playSongpl(currentSong);
+    const originalAlert = window.alert;
+    window.alert = function (message) {
+        originalAlert(message);
+        if (message.includes('An error occurred while trying to play the video.')) {
+            currentIndex++;
+            playNextSong();
+        } else {
+            console.log("alert not received")
+        }
+    }
+    youtubePlayer.addEventListener("onStateChange", (event) => {
+        if (event.data === YT.PlayerState.ENDED) {
+            currentIndex++;
+            playNextSong()
+        }
+    })
+}
+
+// function playToggle(index = 0) {
+//     console.log("inside the playToggle method")
+//     if (index != 0) {
+//         currentIndex = index
+//         console.log("The current index is " + currentIndex)
+//     }
+//     if (isQueuePlaying) {
+//         console.log("The isQueuePlaying is true")
+//         printGlobalVars()
+//         if (youtubePlayer && youtubePlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+//             console.log("before pausing the song")
+//             printGlobalVars()
+//             youtubePlayer.pauseVideo();
+//             console.log("Paused playback at song index:", currentIndex);
+//         }
+//         isQueuePlaying = false;
+//     }
+//     else {
+//         console.log("The isQueuePlaying is false");
+//         printGlobalVars();
+//         isQueuePlaying = true;
+
+//         if (youtubePlayer.getPlayerState() === YT.PlayerState.PAUSED) {
+//             console.log("Resuming playback from where it was paused.");
+//             youtubePlayer.playVideo();  // Resumes from the current position
+//         }
+//         // else if (youtubePlayer.getPlayerState() === YT.PlayerState.UNSTARTED || youtubePlayer.getPlayerState() === YT.PlayerState.ENDED || index !== 0) {
+//         //     console.log("Starting playback from the specified index or restarting.");
+//         //     playNextSong();  // Plays from the specified index
+//         // }
+//         else if (youtubePlayer.getCurrentTime() === 0 || index !== 0) {
+//             console.log("Starting playback from the beginning or specified index.");
+//             playNextSong(currentIndex);  // Plays from the specified index
+//         }
+//     }
+// }
+// function playToggle(index = null) {
+//     console.log("Inside playToggle method with index:", index);
+
+//     // Case 1: User clicked a specific song from the list
+//     if (index !== null) {
+//         if (currentIndex === index && youtubePlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+//             // If clicking the currently playing song, pause it
+//             youtubePlayer.pauseVideo();
+//             isQueuePlaying = false;
+//         } else {
+//             // If clicking a different song or the same song that's paused
+//             currentIndex = index;
+//             playSongpl(songQueue[currentIndex]);
+//             isQueuePlaying = true;
+//         }
+//         return;
+//     }
+
+//     // Case 2: User clicked the play/pause toggle button
+//     const playerState = youtubePlayer.getPlayerState();
+
+//     if (playerState === YT.PlayerState.PLAYING) {
+//         // Pause the currently playing song
+//         youtubePlayer.pauseVideo();
+//         isQueuePlaying = false;
+//     } else if (playerState === YT.PlayerState.PAUSED) {
+//         // Resume the paused song
+//         youtubePlayer.playVideo();
+//         isQueuePlaying = true;
+//     } else {
+//         // Start playing from current index if no song is playing
+//         playNextSong();
+//         isQueuePlaying = true;
+//     }
+// }
+function playToggle(index = null) {
+    console.log("Inside playToggle method with index:", index);
+    if (!youtubePlayer) {
+        console.error("YouTube player not initialized");
+        return;
+    }
+    const playerState = youtubePlayer.getPlayerState();
+    console.log("Current player state:", playerState);
+
+    if (index !== null) {
+        if (currentIndex === index && playerState === YT.PlayerState.PLAYING) {
+            console.log("Pausing current song");
+            youtubePlayer.pauseVideo();
+            isQueuePlaying = false;
+        } else {
+            console.log("Playing selected song");
+            currentIndex = index;
+            playSongpl(songQueue[currentIndex]);
+            isQueuePlaying = true;
+        }
+        return;
+    }
+
+    console.log("Toggle button clicked, current state:", playerState);
+
+    if (playerState === YT.PlayerState.PLAYING) {
+        console.log("Pausing video");
+        youtubePlayer.pauseVideo();
+        isQueuePlaying = false;
+    } else if (playerState === YT.PlayerState.PAUSED || playerState === YT.PlayerState.CUED) {
+        console.log("Resuming video");
+        youtubePlayer.playVideo();
+        isQueuePlaying = true;
+    } else {
+        console.log("Starting playlist");
+        playNextSong();
+        isQueuePlaying = true;
+    }
+}
+// else {
+//     console.log("The isQueuePlaying is false")
+//     printGlobalVars()
+//     isQueuePlaying = true;
+//     console.log("Resuming playback from song index:", currentIndex);
+//     playNextSong(currentIndex);
+// }
+// function playToggle(index = 0) {
+//     console.log("inside the playToggle method")
+//     if (index != 0) {
+//         currentIndex = index
+//         console.log("The current index is " + currentIndex)
+//     }
+//     if (isQueuePlaying) {
+//         console.log("The isQueuePlaying is true")
+//         printGlobalVars()
+//         if (youtubePlayer && youtubePlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+//             console.log("before pausing the song")
+//             printGlobalVars()
+//             youtubePlayer.pauseVideo();
+//             console.log("Paused playback at song index:", currentIndex);
+//         }
+//         isQueuePlaying = false;
+//     }
+// else {
+//     console.log("The isQueuePlaying is false")
+//     printGlobalVars()
+//     isQueuePlaying = true;
+//     console.log("Resuming playback from song index:", currentIndex);
+//     playNextSong(currentIndex);
+// }
+
+// if (!youtubePlayer) {
+//     console.error('YouTube player not initialized');
+//     return;
+// }
+// const playerState = youtubePlayer.getPlayerState();
+
+// if (playerState === YT.PlayerState.PLAYING) {
+//     youtubePlayer.pauseVideo();
+//     isPlaying = false;
+//     document.getElementById("play-pause").textContent = 'Play';
+// } else {
+//     youtubePlayer.playVideo();
+//     isPlaying = true;
+//     document.getElementById("play-pause").textContent = 'Pause';
+// }
+
+// function playToggle(index = 0) {
+//     console.log("inside the playToggle method");
+
+//     // Ensure the YouTube player is initialized
+//     if (!youtubePlayer) {
+//         console.error('YouTube player not initialized');
+//         return;
+//     }
+
+//     // Update current index if provided
+//     if (index !== 0) {
+//         currentIndex = index;
+//         console.log("The current index is set to: " + currentIndex);
+//     }
+
+//     // Fetch the current player state
+//     const playerState = youtubePlayer.getPlayerState();
+
+//     // If currently playing, pause the video
+//     if (isQueuePlaying && playerState === YT.PlayerState.PLAYING) {
+//         console.log("Pausing the song...");
+//         youtubePlayer.pauseVideo();
+//         isQueuePlaying = false;
+//         // document.getElementById("play-pause").textContent = 'Play';
+//     }
+//     // If paused or video not started, resume or start playback
+//     else {
+//         console.log("Starting or resuming the song...");
+//         if (playerState === YT.PlayerState.UNSTARTED || index !== 0) {
+//             console.log("The song is unstarted and played from the beginning")
+//             playNextSong(currentIndex);  // Start from specified index
+//         } else {
+//             console.log("Resuming the song")
+//             youtubePlayer.playVideo();  // Resume current song
+//         }
+//         isQueuePlaying = true;
+//         // document.getElementById("play-pause").textContent = 'Pause';
+//     }
+
+//     printGlobalVars();
+// }
+
+
+async function getPlaylistSongs() {
+    try {
+        resetGlobalPlaylistVariables();
+        console.log("inside the getplaylistsongs method")
+        let playlist_name = document.getElementById('playlist-name').textContent;
+        // alert("The playlist name is " + playlist_name)
+        let result = await go_backend_json('displayPlaylistSongs', 'POST', { playlist_name: playlist_name })
+        if (result.status === true) {
+            console.log(result.data)
+            const songs = result.data.map(item => item.song_data.song_data.video_id);
+            songQueue.push(...songs);
+            console.log(songQueue)
+            printGlobalVars()
+        }
+        else {
+            console.log("Failed to fetch all the songs in the playlist")
+        }
+    }
+    catch (error) {
+        console.log("Error in fetching all the songs in the playlist")
+    }
+
+}
+
+async function addToPlaylist() {
+    try {
+        console.log("inside the addtoplaylist method")
+        console.log(current_searched_song)
+        let selected_playlist_name = document.getElementById('playlist-name').textContent;
+        console.log("Selected playlist name is " + selected_playlist_name);
+        let result = await go_backend_json('playlistSongs', 'POST', { song_data: current_searched_song, playlist_name: selected_playlist_name });
+        if (result.status === true) {
+            alert("Songs successfully added to the playlist " + selected_playlist_name);
+            document.getElementById('searched-songs').style.display = 'none'
+            showAddedSongsPlaylist(selected_playlist_name)
+        }
+        else {
+            alert("Song already exist in the playlist")
+        }
+    }
+    catch (error) {
+        alert("Error in adding song to the playlist")
+    }
+}
+
+function resetGlobalPlaylistVariables() {
+    console.log("inside the resetgloabalplaylistvariables")
+    songQueue = []
+    isQueuePlaying = false
+    currentIndex = 0
+}
+
+function showAddedSongs(tableBody, record, index) {
+    console.log("Inside the showAddedSongs")
+    let songData = record.song_data.song_data;
+    let playlist_name = record.playlist_data.playlist_name
+    console.log("The playlist name is " + playlist_name)
+    console.log("Video ID:", songData.video_id);
+    console.log("Title:", songData.title);
+    console.log("URL:", songData.url);
+    console.log("Thumbnail URL:", songData.pic_url);
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        
+        <td class='tdata'>${index + 1}</td>
+        <td class='tdata'><img src="${songData.pic_url}" alt="Track Canvas" style="width: 50px; height: 50px;"></td>
+        <td class='tdata'>${songData.title}</td>
+        <td class='action-img-cell'>
+            <img 
+                src="http://127.0.0.1:8000/static/spotifyhome/remove.png" 
+                alt="Action Icon" 
+                style="width: 24px; height: 24px; cursor: pointer;" 
+                
+            >
+        </td>
+    `;
+    // onclick="handleRowAction(this,'playlist')"
+    const actionIcon = row.querySelector('.action-img-cell img');
+    if (actionIcon) {
+        actionIcon.addEventListener('click', function (event) {
+            event.stopPropagation();
+            handleRowAction(this, 'playlist');
+        });
+    }
+    row.dataset.record = JSON.stringify(record);
+    row.addEventListener('click', function (event) {
+        alert("this rows is clicked and the index is " + index)
+        playToggle(index)
+    })
+    tableBody.appendChild(row);
+
+}
+
+async function handleRowAction(element, input) {
+    try {
+        let row = element.closest('tr');
+        let record = JSON.parse(row.dataset.record);
+        if (input == 'playlist') {
+            console.log("Record for this row:", record);
+            let song_data = record.song_data;
+            console.log("The song link is " + song_data.song_data.url)
+            let playlist_data = record.playlist_data;
+            let playlist_name = playlist_data.playlist_name
+            let result = await go_backend_json('playlistSongs', 'DELETE', { song_data: song_data, playlist_data: playlist_data })
+            if (result.status === true) {
+                alert("Successfully removed")
+                showAddedSongsPlaylist(playlist_name)
+            }
+            else {
+                alert("Cannot remove the song")
+            }
+        }
+        else if (input == 'liked') {
+            let song_data = record.song.song_data.song;
+            let result = await go_backend_json('liked', 'DELETE', { song: song_data })
+            if (result.status === true) {
+                alert("Successfully removed")
+                getLikedSongs()
+            }
+            else {
+                alert("Cannot remove the song")
+            }
+        }
+        else {
+            let song_data = record.song.song_data.song;
+            let result = await go_backend_json('favourite', 'DELETE', { song: song_data })
+            if (result.status === true) {
+                alert("Successfully removed")
+                getFavSongs()
+            }
+            else {
+                alert("Cannot remove the song")
+            }
+        }
+
+    }
+    catch (error) {
+        alert("Error in removing the song")
+    }
+
+
+}
+
+async function showAddedSongsPlaylist(playlist_name) {
+    console.log("inside the showAddedplaylist method and the playlist name is " + playlist_name)
+    let result = await go_backend_json('displayPlaylistSongs', 'POST', { playlist_name: playlist_name })
+    const playlistSongstable = document.querySelector('.song-list tbody');
+    playlistSongstable.innerHTML = ''
+    if (result.status === true) {
+        // alert("Data was successfully fetched");
+        console.log(result.data);
+        document.getElementById('nosongs').style.display = 'none'
+        result.data.forEach((record, index) => {
+            showAddedSongs(playlistSongstable, record, index);
+        });
+    } else {
+        const nosongsdiv = document.getElementById('nosongs')
+        nosongsdiv.innerHTML = ''
+        let noSongs = document.createElement('p');
+        nosongsdiv.style.display = 'block'
+        noSongs.textContent = "🗂️ No songs in the playlists yet! 📀 Add some!";
+        noSongs.style.textAlign = 'center';
+        noSongs.style.marginTop = '20px';
+        noSongs.style.fontFamily = '"Dancing Script", cursive';
+        noSongs.style.fontSize = '15px';
+        noSongs.style.color = 'white';
+        nosongsdiv.append(noSongs)
+
+    }
+}
+
+
+function showPlaylistHome() {
+    console.log("inside the showplaylisthome method");
+    console.log("playlist home displayed")
+    document.getElementById('playlistSongs').style.display = 'none';
+    document.getElementById('playlist-container').style.display = 'block';
+}
+
+async function playlist_input_display_songs(song_name) {
+    console.log("inside the playlist_input_display_songs")
+    const result = await go_backend_json('youtube', 'POST', { song_name: song_name });
+    current_searched_song = result;
+    if (result && result.video_id) {
+        console.log("The result is searched from the playlist : " + result);
+        displaySearchedSongs(result);
+    }
+}
+
+function displaySearchedSongs(result) {
+    console.log("inside the displaySearchedSongs method")
+    document.getElementById("searched-songs").style.display = 'block';
+    document.getElementById('song-img').src = result.pic_url;
+    document.getElementById('song-desc').textContent = result.title;
+}
 
 function showPlaylistSongs(playlist_name) {
     console.log("showplaylistsongs was called")
     document.getElementById("songList").style.display = 'none';
     document.getElementById("playlist-container").style.display = 'none';
     document.getElementById("playlistSongs").style.display = 'block';
-    document.getElementById("playlist-name").textContent = playlist_name
+    document.getElementById("playlist-name").textContent = playlist_name;
+    getPlaylistSongs()
+    showAddedSongsPlaylist(playlist_name)
 }
 
 async function deletePlaylist(playlist_name) {
@@ -219,13 +743,15 @@ function playlists(user_playlist_container, playlistName) {
     songs_div.style.display = 'flex';
     songs_div.style.alignItems = 'center';
     songs_div.style.padding = '0 20px';
-    songs_div.style.color = '#FFFFF0';
+    songs_div.style.color = '#F0F0F0';
     songs_div.style.fontSize = '18px';
     songs_div.style.fontWeight = 'bold';
     songs_div.style.borderRadius = '8px';
+    songs_div.style.fontFamily = '"Dancing Script", cursive';
     songs_div.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
     songs_div.className = 'playlists';
-    songs_div.textContent = playlistName;
+    console.log("Playlist name is : " + playlistName.toUpperCase())
+    songs_div.textContent = playlistName.toUpperCase();
     let delete_img = document.createElement('img');
     delete_img.src = 'http://127.0.0.1:8000/static/spotifyhome/delete.jpg';
     delete_img.alt = 'Delete';
@@ -233,6 +759,7 @@ function playlists(user_playlist_container, playlistName) {
     delete_img.style.height = '20px';
     delete_img.style.cursor = 'pointer';
     delete_img.style.marginLeft = 'auto';
+    delete_img.style.borderRadius = '50%';
     delete_img.className = 'deleteplaylist'
     songs_div.appendChild(delete_img);
     user_playlist_container.appendChild(songs_div);
@@ -243,6 +770,7 @@ async function getPlaylists() {
     try {
         let result = await go_backend_json('playlist', 'GET');
         if (result.status === true) {
+            console.log("before user_playlist_container")
             let user_playlist_container = document.querySelector('.user-playlists');
             console.log("Playlist data fetched:", result.data);
             result.data.forEach(record => {
@@ -256,13 +784,222 @@ async function getPlaylists() {
     }
 }
 
+function showLikedAddedSongs(table, record, index) {
+    let songData = record.song.song_data.song;
+    let row = document.createElement('tr');
+    row.innerHTML = `
+        
+        <td class='tdata'>${index + 1}</td>
+        <td class='tdata'><img src="${songData.pic_url}" alt="Track Canvas" style="width: 50px; height: 50px;"></td>
+        <td class='tdata'>${songData.title}</td>
+        <td class='action-img-cell'>
+            <img 
+                src="http://127.0.0.1:8000/static/spotifyhome/remove.png" 
+                alt="Action Icon" 
+                style="width: 24px; height: 24px; cursor: pointer;" 
+            >
+        </td>
+    `;
+    const actionIcon = row.querySelector('.action-img-cell img');
+    if (actionIcon) {
+        actionIcon.addEventListener('click', function (event) {
+            event.stopPropagation();
+            handleRowAction(this, 'liked');
+        });
+    }
+    row.dataset.record = JSON.stringify(record);
+    row.addEventListener('click', function (event) {
+        // alert("this rows is clicked and the index is " + index)
+        playToggle(index)
+    });
+    row.dataset.record = JSON.stringify(record);
+    table.appendChild(row);
+}
 
-function playlistPage() {
-    console.log("inside the playlistPage")
-    document.getElementById("songList").style.display = 'none';
-    document.getElementById("playlist-container").style.display = 'block';
-    getPlaylists()
-    // document.querySelector(".scrollable-content").style.overflow = 'hidden';
+async function getLikedSongs() {
+    try {
+        console.log("inside the getLikedSongs")
+        let result = await go_backend_json('liked', 'GET')
+        const likedtable = document.querySelector('.likedsong-list tbody')
+        likedtable.innerHTML = ''
+        if (result.status === true) {
+            console.log("the if condition is passed")
+            result.songs.forEach((record, index) => {
+                showLikedAddedSongs(likedtable, record, index);
+            });
+        } else {
+            console.log("The else is passed")
+            const nosongsdiv = document.getElementById('nosongsliked')
+            nosongsdiv.innerHTML = ''
+            let noSongs = document.createElement('p');
+            nosongsdiv.style.display = 'block'
+            noSongs.textContent = "⭐ No liked songs yet. 👍 Add some jams!";
+            noSongs.style.textAlign = 'center';
+            noSongs.style.marginTop = '20px';
+            noSongs.style.fontFamily = '"Dancing Script", cursive';
+            noSongs.style.fontSize = '15px';
+            noSongs.style.color = 'white';
+            nosongsdiv.append(noSongs)
+
+        }
+    }
+    catch (error) {
+        console.error("Error fetching liked songs:", error);
+    }
+}
+
+function showFavAddedSongs(table, record, index) {
+    let songData = record.song.song_data.song;
+    let row = document.createElement('tr');
+    row.innerHTML = `
+        
+        <td class='tdata'>${index + 1}</td>
+        <td class='tdata'><img src="${songData.pic_url}" alt="Track Canvas" style="width: 50px; height: 50px;"></td>
+        <td class='tdata'>${songData.title}</td>
+        <td class='action-img-cell'>
+            <img 
+                src="http://127.0.0.1:8000/static/spotifyhome/remove.png" 
+                alt="Action Icon" 
+                style="width: 24px; height: 24px; cursor: pointer;" 
+            >
+        </td>
+    `;
+    const actionIcon = row.querySelector('.action-img-cell img');
+    if (actionIcon) {
+        actionIcon.addEventListener('click', function (event) {
+            event.stopPropagation();
+            handleRowAction(this, 'fav');
+        });
+    }
+    row.dataset.record = JSON.stringify(record);
+    row.addEventListener('click', function (event) {
+        // alert("this rows is clicked and the index is " + index)
+        playToggle(index)
+    })
+    row.dataset.record = JSON.stringify(record);
+    table.appendChild(row);
+}
+
+async function getFavSongs() {
+    try {
+        let result = await go_backend_json('favourite', 'GET')
+        const favtable = document.querySelector('.favsong-list tbody')
+        favtable.innerHTML = ''
+        if (result.status === true) {
+            console.log("the if condition is passed")
+            result.songs.forEach((record, index) => {
+                showFavAddedSongs(favtable, record, index);
+            });
+        } else {
+            const nosongsdiv = document.getElementById('nosongsfav')
+            nosongsdiv.innerHTML = ''
+            let noSongs = document.createElement('p');
+            nosongsdiv.style.display = 'block'
+            noSongs.textContent = "💖 No favourites yet! ❤️ Add some love!";
+            noSongs.style.textAlign = 'center';
+            noSongs.style.marginTop = '20px';
+            noSongs.style.fontFamily = '"Dancing Script", cursive';
+            noSongs.style.fontSize = '15px';
+            noSongs.style.color = 'white';
+            nosongsdiv.append(noSongs)
+
+        }
+    }
+    catch (error) {
+        console.error("Error fetching liked songs:", error);
+    }
+}
+function printGlobalVars() {
+    console.log("inside the printGlobalVars method")
+    console.log("The song queue is " + songQueue);
+    console.log("The isQueuePlaying is " + isQueuePlaying);
+    console.log("The current index is " + currentIndex)
+
+}
+async function getLikedSongsPlay() {
+    resetGlobalPlaylistVariables();
+    try {
+        console.log("inside the getLikedSongsPlay")
+        let result = await go_backend_json('liked', 'GET');
+        if (result.status === true) {
+            console.log(result.songs)
+            const songs = result.songs.map(item => item.song.song_data.song.video_id);
+            songQueue.push(...songs);
+            console.log(songQueue)
+            printGlobalVars()
+        }
+        else {
+            console.log("Failed to get liked songs")
+        }
+    }
+    catch (error) {
+        console.log("Error in getting liked songs")
+    }
+}
+
+async function getFavSongsPlay() {
+    resetGlobalPlaylistVariables();
+    try {
+        console.log("inside the getFavSongsPlay")
+        let result = await go_backend_json('favourite', 'GET');
+        if (result.status === true) {
+            console.log(result.songs)
+            const songs = result.songs.map(item => item.song.song_data.song.video_id);
+            songQueue.push(...songs);
+            console.log(songQueue)
+            printGlobalVars()
+        }
+        else {
+            console.log("Failed to get favourite songs")
+        }
+    }
+    catch (error) {
+        console.log("Error in getting favourite songs")
+    }
+}
+
+function showPages(input) {
+    console.log("inside the showPages")
+    if (input == 'playlist') {
+        console.log("inside the playlist")
+        document.getElementById("songList").style.display = 'none';
+        document.getElementById('audio-player-container').style.display = 'none';
+        document.getElementById('likedsongs-container').style.display = 'none';
+        document.getElementById('favsongs-container').style.display = 'none'
+        let playlistContainer = document.getElementById("playlist-container");
+        playlistContainer.style.display = 'block';
+        let remove_playlist_containers = document.querySelector('.user-playlists');
+        remove_playlist_containers.innerHTML = ""
+        getPlaylists()
+    }
+    else if (input == 'liked') {
+        console.log("inside the liked")
+        document.getElementById("songList").style.display = 'none';
+        document.getElementById("playlist-container").style.display = 'none';
+        document.getElementById('audio-player-container').style.display = 'none';
+        document.getElementById('favsongs-container').style.display = 'none'
+        let likedSongsContainer = document.getElementById('likedsongs-container')
+        likedSongsContainer.style.display = 'block';
+        getLikedSongsPlay();
+        console.log("getlikedsongsplay was called")
+        getLikedSongs();
+        console.log("getlikedsongs was called")
+
+
+    }
+    else {
+        console.log("inside the favorites")
+        document.getElementById("songList").style.display = 'none';
+        document.getElementById("playlist-container").style.display = 'none';
+        document.getElementById('audio-player-container').style.display = 'none';
+        document.getElementById('likedsongs-container').style.display = 'none';
+        let favSongsContainer = document.getElementById('favsongs-container');
+        favSongsContainer.style.display = 'block';
+        getFavSongsPlay();
+        console.log("getfavsongsplay was called")
+        getFavSongs();
+        console.log("getfavsongs was called")
+    }
 
 }
 
@@ -339,9 +1076,9 @@ async function getCurrentUser() {
         console.log(result);
         if (result.status === true) {
 
-            alert(result.user.username + " " + result.user.email);
+            // alert(result.user.username + " " + result.user.email);
         } else {
-            alert('Getting userdetails Failed');
+            // alert('Getting userdetails Failed');
         }
         return result;
 
@@ -406,6 +1143,7 @@ function openAuthOverlay(action) {
     document.getElementById('registerForm').style.display = action == 'signin' ? 'block' : 'none';
     document.getElementById('emailForm').style.display = action == 'email' ? 'block' : 'none';
     document.getElementById('playlistSong').style.display = action == 'playlist' ? 'block' : 'none';
+    document.getElementById('settings').style.display = action == 'settings' ? 'block' : 'none';
 }
 
 
@@ -504,6 +1242,11 @@ function displayPage() {
     document.getElementById('playlist-container').style.display = 'none';
     document.querySelector(".scrollable-content").style.overflow = 'auto';
     document.getElementById("songList").style.display = 'block';
+    document.getElementById("playlistSongs").style.display = 'none';
+    document.getElementById('likedsongs-container').style.display = 'none';
+    document.getElementById('favsongs-container').style.display = 'none';
+
+
 }
 
 async function fetch_song_details(song_name) {
@@ -591,6 +1334,11 @@ async function playSong(result) {
     document.getElementById("songList").style.display = 'none';
     document.getElementById("audio-player-container").style.display = 'block';
     document.querySelector(".scrollable-content").style.overflow = 'hidden';
+    document.getElementById("playlistSongs").style.display = 'none';
+    document.getElementById('likedsongs-container').style.display = 'none';
+    document.getElementById('favsongs-container').style.display = 'none';
+    document.getElementById('playlist-container').style.display = 'none';
+
 
     const playPic = document.getElementById("play-pic");
     if (playPic) {
@@ -691,4 +1439,8 @@ if (typeof YT === 'undefined') {
     tag.src = "https://www.youtube.com/iframe_api";
     const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+}
+
+window.onload = function () {
+    resetGlobalPlaylistVariables()
 }

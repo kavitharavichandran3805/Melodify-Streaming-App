@@ -15,9 +15,10 @@ class FavouriteSongsModel(models.Model):
 
 class PlaylistModel(models.Model):
     playlist_name=models.CharField(max_length=100)
-    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    user=models.ForeignKey(User,on_delete=models.CASCADE,default=1)
     songs = models.ManyToManyField(SongsModel, through='PlaylistSongsModel', related_name='playlists')
 
 class PlaylistSongsModel(models.Model):
     song_data=models.ForeignKey(SongsModel,on_delete=models.CASCADE)
     playlist_data=models.ForeignKey(PlaylistModel,on_delete=models.CASCADE)
+    user=models.ForeignKey(User,on_delete=models.CASCADE,default=1)

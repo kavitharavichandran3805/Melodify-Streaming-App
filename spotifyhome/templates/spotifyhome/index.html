@@ -112,7 +112,7 @@
                             <img src="{% static 'spotifyhome/kesariya.png' %}" alt="kesariya tera   " class="pics">
                         </div>
                     </div>
-                    <button id="current-user">Current user</button>
+                    <!-- <button id="current-user">Current user</button> -->
 
                 </div>
                 <!-- <div class="bottom-gap"></div> -->
@@ -145,105 +145,231 @@
             </div>
             <div id="playlist-container" style="display:none">
                 <h2 id="playlist-header">Your Playlists</h2>
+                <button id="go-pl-home">Back</button>
                 <div class="user-playlists"></div>
                 <div id="create-playlist">
                     <button id="create-pl">+ Create Playlist</button>
                 </div>
             </div>
 
-            <div id="playlistSongs" style="display:none">
-                <h2 id="playlist-name"></h2>
-                <div class="input-container">
-                    <input type="text" id="playlist-search" placeholder="Search for songs">
+            <div id="likedsongs-container" style="display:none">
+                <div id="liked-header-container">
+                    <h2 id="likedsongs-header">Liked Songs</h2>
+                    <div id="liked-songs-controls">
+                        <button class="liked-play-btn">&#9658;</button>
+                    </div>
+                    <button id="go-liked-home">Back</button>
                 </div>
-                <div class="playlist-songs"></div>
-            </div>
+                <div id="liked-songs">
 
-        </div>
+                    <div id="liked-added-songs">
+                        <table class="likedsong-list">
+                            <thead>
+                                <tr>
 
-        <div id="side-layout" style="display:none">
-            <div id="side">
-                <p id="user-mail-id"></p>
-                <button id="logout">Logout</button>
-                <button id="side-close">&times;</button>
-            </div>
-        </div>
+                                    <th>#</th>
+                                    <th>Track Canvas</th>
+                                    <th>Title</th>
+                                    <!-- <th>Date added</th> -->
+                                    <th></th>
 
-        <div id="authOverlay">
-            <div class="auth-form">
-                <button id="close-btn">&times;</button>
-                <div id="loginForm">
-                    <h2>Login</h2>
-                    <form>
-                        <div class="form-group">
-                            <label for="loginUsername">Email:</label>
-                            <input type="email" id="loginEmail" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="loginPassword">Password:</label>
-                            <input type="password" id="loginPassword" name="password" required>
-                        </div>
-                        <div class="form-group">
-                            <button type="submit" id="login-submit">Log In</button>
-                        </div>
-                    </form>
-                    <div class="switch-form">
-                        <button id="switch">New user? Register here</button>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
+                    </div>
+                    <div id="nosongsliked" style="display: none;">
+
                     </div>
                 </div>
-                <div id="registerForm" style="display: none;">
-                    <h2>Register</h2>
-                    <form>
-                        <div class="form-group">
-                            <label for="registerUsername">Username:</label>
-                            <input type="text" id="registerUsername" name="username" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="registerEmail">Email:</label>
-                            <input type="email" id="registerEmail" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="registerPassword">Password:</label>
-                            <input type="password" id="registerPassword" name="password" required>
-                        </div>
-                        <div class="form-group">
-                            <button type="submit" id="reg-submit">Register</button>
-                        </div>
-                    </form>
-                    <!-- <div class="switch-form">
-                        <button onclick="switchForm('login')">Already have an account? Login here</button>
-                    </div> -->
-                </div>
-                <div id="emailForm" style="display:none">
-                    <h2>Write your issue</h2>
-                    <form>
-                        <div class="form-group">
-                            <label for="message">Your message</label>
-                            <textarea id="message" placeholder="Share your thoughts, we’re all ears!" rows="10"
-                                cols="38"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <button type="submit" id="email-submit">Send</button>
-                        </div>
-                    </form>
+            </div>
 
+            <div id="favsongs-container" style="display:none">
+                <div id="fav-header-container">
+                    <h2 id="favsongs-header">Favourite Songs</h2>
+                    <div id="fav-songs-controls">
+                        <button class="fav-play-btn">&#9658;</button>
+                    </div>
+                    <button id="go-fav-home">Back</button>
                 </div>
-                <div id="playlistSong" style="display: none">
-                    <form>
-                        <div class="form-group">
-                            <label for="registerEmail">Playlist Name:</label>
-                            <input type="text" id="playlistName" name="playlistName" required>
-                        </div>
-                        <div class="form-group">
-                            <button type="submit" id="playlistsong-create-btn">Create</button>
-                        </div>
+                <div id="fav-songs">
+                    <div id="fav-added-songs">
+                        <table class="favsong-list">
+                            <thead>
+                                <tr>
 
-                    </form>
+                                    <th>#</th>
+                                    <th>Track Canvas</th>
+                                    <th>Title</th>
+                                    <!-- <th>Date added</th> -->
+                                    <th></th>
+
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
+                    </div>
+                    <div id="nosongsfav" style="display: none;">
+
+                    </div>
                 </div>
             </div>
-        </div>
 
-    </div>
+            <div id="playlistSongs" style="display:none">
+                <div id="pl-header-container">
+                    <h2 id="playlist-name"></h2>
+                    <div id="playlist-controls">
+                        <button id="playlist-play-btn">&#9658;</button>
+                    </div>
+                    <button id="go-playlist-home">Back</button>
+                </div>
+                <div class="playlist-songs">
+                    <div id="added-songs">
+                        <table class="song-list">
+                            <thead>
+                                <tr>
+
+                                    <th>#</th>
+                                    <th>Track Canvas</th>
+                                    <th>Title</th>
+                                    <!-- <th>Date added</th> -->
+                                    <th></th>
+
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
+                    </div>
+                    <div id="nosongs" style="display: none;">
+
+                    </div>
+                    <div class="playlist-input-container">
+                        <p2>Let's find something for your playlist</p2>
+                        <input type="text" id="playlist-search" placeholder="Search for songs">
+                    </div>
+                    <div id="searched-songs" style="display:none">
+                        <table id="playlist-searched-songs">
+                            <thead>
+                                <tr>
+                                    <th><img id="song-img" src="" alt="Song Image" style="width: 50px; height: 50px;">
+                                    </th>
+                                    <th><span id="song-desc"></span></th>
+                                    <th><button id="add_songs_to_playlist">ADD</button></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+
+
+                </div>
+
+            </div>
+
+            <div id="side-layout" style="display:none">
+                <div id="side">
+                    <p id="user-mail-id"></p>
+                    <button id="logout">Logout</button>
+                    <button id="side-close">&times;</button>
+                </div>
+            </div>
+
+            <div id="authOverlay">
+                <div class="auth-form">
+                    <button id="close-btn">&times;</button>
+                    <div id="loginForm">
+                        <h2>Login</h2>
+                        <form>
+                            <div class="form-group">
+                                <label for="loginUsername">Email:</label>
+                                <input type="email" id="loginEmail" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="loginPassword">Password:</label>
+                                <input type="password" id="loginPassword" name="password" required>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" id="login-submit">Log In</button>
+                            </div>
+                        </form>
+                        <div class="switch-form">
+                            <button id="switch">New user? Register here</button>
+                        </div>
+                    </div>
+                    <div id="registerForm" style="display: none;">
+                        <h2>Register</h2>
+                        <form>
+                            <div class="form-group">
+                                <label for="registerUsername">Username:</label>
+                                <input type="text" id="registerUsername" name="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="registerEmail">Email:</label>
+                                <input type="email" id="registerEmail" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="registerPassword">Password:</label>
+                                <input type="password" id="registerPassword" name="password" required>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" id="reg-submit">Register</button>
+                            </div>
+                        </form>
+                        <!-- <div class="switch-form">
+                        <button onclick="switchForm('login')">Already have an account? Login here</button>
+                    </div> -->
+                    </div>
+                    <div id="emailForm" style="display:none">
+                        <h2>Write your issue</h2>
+                        <form>
+                            <div class="form-group">
+                                <label for="message">Your message</label>
+                                <textarea id="message" placeholder="Share your thoughts, we’re all ears!" rows="10"
+                                    cols="38"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" id="email-submit">Send</button>
+                            </div>
+                        </form>
+
+                    </div>
+                    <div id="playlistSong" style="display: none">
+                        <form>
+                            <div class="form-group">
+                                <label for="registerEmail">Playlist Name:</label>
+                                <input type="text" id="playlistName" name="playlistName" required>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" id="playlistsong-create-btn">Create</button>
+                            </div>
+
+                        </form>
+                    </div>
+
+                    <div id="settings" style="display:none">
+                        <form>
+                            <div class="form-group">
+                                <label for="settings">Choose Theme : </label>
+                                <div class="radio-group">
+                                    <div class="radio-item">
+                                        <input type="radio" name="theme" value="dark" id="dark">
+                                        <label for="dark">Dark</label>
+                                    </div>
+                                    <div class="radio-item">
+                                        <input type="radio" name="theme" value="white" id="white">
+                                        <label for="white">White</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
 
 
 </body>
