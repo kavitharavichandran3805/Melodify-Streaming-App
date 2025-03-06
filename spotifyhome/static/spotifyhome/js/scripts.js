@@ -590,7 +590,7 @@ function showAddedSongs(tableBody, record, index) {
     }
     row.dataset.record = JSON.stringify(record);
     row.addEventListener('click', function (event) {
-        alert("this rows is clicked and the index is " + index)
+        // alert("this rows is clicked and the index is " + index)
         playToggle(index)
     })
     tableBody.appendChild(row);
